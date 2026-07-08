@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+from config.settings import settings
+
 from .models.schemas import TriggerType
 from .trigger import scheduler
 from .pipeline import run_pipeline
@@ -12,7 +14,7 @@ from .pipeline import run_pipeline
 
 def main() -> None:
     trigger = scheduler.detect_event_trigger() or TriggerType.SCHEDULED
-    seed_keywords = ["난청", "보청기", "치매"]  # TODO: 시드 키워드 소스 연동
+    seed_keywords = list(settings.seed_keywords)
 
     print(f"[START] trigger={trigger.value}, seeds={seed_keywords}")
     ctx = run_pipeline(trigger, seed_keywords)

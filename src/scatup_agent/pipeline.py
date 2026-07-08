@@ -23,6 +23,7 @@ def run_pipeline(trigger: TriggerType, seed_keywords: list[str]) -> PipelineCont
     # Step 1 · 키워드 확장
     with guard(ctx, step="Step 1 키워드 확장"):
         ctx.expanded_keywords = keyword_expander.expand(ctx.seed_keywords)
+        print(f"[EXPAND] 시드 {len(ctx.seed_keywords)}개 → 확장 {len(ctx.expanded_keywords)}개: {ctx.expanded_keywords}")
 
     # Step 2 · 네이버 수집
     with guard(ctx, step="Step 2 네이버 수집"):

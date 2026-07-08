@@ -32,6 +32,15 @@ class Settings:
     # --- 타겟 고객 (rule §0) ---
     target_audience: str = "40~50대, 남녀 약 6:4, 효도상품·가족소통 니즈"
 
+    # --- 시드 키워드 (rule §5 Step 1) : 팀에서 지속 보강 ---
+    seed_keywords: tuple[str, ...] = (
+        "난청", "보청기", "보청기 정부지원", "보청기 가격비교", "이명", "안들림",
+    )
+
+    # --- 키워드 확장 (rule §5 Step 1, §6 데이터 부족 재확장) ---
+    related_keywords_per_seed: int = 5   # 키워드당 연관검색어 최대 수
+    max_expanded_keywords: int = 50      # 확장 키워드 전체 상한
+
     # --- 의료 민감 키워드 (rule §6, §7) : 팀에서 지속 보강 ---
     medical_sensitive_keywords: tuple[str, ...] = (
         "치료", "효과", "부작용", "완치", "예방", "부작용 없음",

@@ -1,0 +1,13 @@
+# 비밀값 (절대 커밋 금지)
+.env
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE/OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
