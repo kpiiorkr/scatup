@@ -11,3 +11,6 @@ __pycache__/
 .idea/
 Thumbs.db
 .DS_Store
+
+# 실행 산출물 (검수용 로컬 파일)
+data/outputs/

@@ -19,7 +19,9 @@ def main() -> None:
     print(f"[START] trigger={trigger.value}, seeds={seed_keywords}")
     ctx = run_pipeline(trigger, seed_keywords)
 
-    if ctx.halted:
+    if ctx.halted and ctx.draft:
+        print(f"[HALTED] 초안은 생성 완료, 담당자 검수 대기 → {ctx.halt_reason}")
+    elif ctx.halted:
         print(f"[HALTED] 담당자 판단 필요 → {ctx.halt_reason}")
     else:
         print("[DONE] 초안 생성 완료 → 검수 대기 등록 (발행은 사람이 직접 수행)")
