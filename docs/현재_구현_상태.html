@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scatup 에이전트 — 현재 구현 상태</title>
+<style>
+  :root {
+    --bg: #FBFAF7;
+    --surface: #FFFFFF;
+    --ink: #22302B;
+    --ink-soft: #5C6B64;
+    --line: #E3E1D9;
+    --accent: #0E7C6B;
+    --accent-soft: #E3F1ED;
+    --halt: #B3402E;
+    --halt-soft: #F8E9E5;
+    --warn: #9A6B1F;
+    --warn-soft: #F6EEDC;
+    --stub: #8A8578;
+    --stub-soft: #F0EEE6;
+    --code-bg: #F2F0EA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171D1B; --surface: #1F2724; --ink: #E4E8E4; --ink-soft: #96A29B;
+      --line: #34403B; --accent: #4DB8A2; --accent-soft: #1E3A34;
+      --halt: #E07B65; --halt-soft: #3C2721; --warn: #D2A659; --warn-soft: #38301D;
+      --stub: #8D9188; --stub-soft: #2A2F2B; --code-bg: #262E2A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171D1B; --surface: #1F2724; --ink: #E4E8E4; --ink-soft: #96A29B;
+    --line: #34403B; --accent: #4DB8A2; --accent-soft: #1E3A34;
+    --halt: #E07B65; --halt-soft: #3C2721; --warn: #D2A659; --warn-soft: #38301D;
+    --stub: #8D9188; --stub-soft: #2A2F2B; --code-bg: #262E2A;
+  }
+  :root[data-theme="light"] {
+    --bg: #FBFAF7; --surface: #FFFFFF; --ink: #22302B; --ink-soft: #5C6B64;
+    --line: #E3E1D9; --accent: #0E7C6B; --accent-soft: #E3F1ED;
+    --halt: #B3402E; --halt-soft: #F8E9E5; --warn: #9A6B1F; --warn-soft: #F6EEDC;
+    --stub: #8A8578; --stub-soft: #F0EEE6; --code-bg: #F2F0EA;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+    line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 8px;
+  }
+  h1 { font-size: 30px; line-height: 1.3; margin: 0 0 8px; text-wrap: balance; font-weight: 800; }
+  .lede { color: var(--ink-soft); font-size: 15px; margin: 0 0 12px; max-width: 64ch; }
+  h2 { font-size: 19px; margin: 56px 0 6px; font-weight: 750; }
+  h2 + p.sub { color: var(--ink-soft); font-size: 14px; margin: 0 0 20px; max-width: 66ch; }
+
+  code, .path {
+    font-family: "D2Coding", Consolas, "Courier New", monospace;
+    font-size: 0.88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .stat .num { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat .lbl { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+  .stat.accent .num { color: var(--accent); }
+  .stat.warn .num { color: var(--warn); }
+
+  /* 실행 로그 */
+  .runbox {
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 10px; padding: 18px 20px; margin-top: 20px; overflow-x: auto;
+  }
+  .rline { font-family: "D2Coding", Consolas, monospace; font-size: 12.5px; padding: 2px 0; white-space: nowrap; }
+  .rline .k { font-weight: 700; }
+  .rline.ok .k { color: var(--accent); }
+  .rline.mock .k { color: var(--stub); }
+  .rline.warnl .k { color: var(--warn); }
+  .rline.haltl .k { color: var(--halt); }
+  .runnote { font-size: 13.5px; color: var(--ink-soft); margin-top: 12px; max-width: 66ch; }
+
+  /* 단계 진행 표시 */
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; align-items: center; }
+  .fstep {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--accent-soft); color: var(--accent); border: 1.5px solid var(--accent);
+    font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 999px;
+  }
+  .fstep.gate { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
+  .fstep.haltf { background: var(--halt-soft); color: var(--halt); border-color: var(--halt); }
+  .farrow { color: var(--ink-soft); font-size: 12px; }
+
+  /* 결과물 미리보기 */
+  .doc {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 26px 30px; margin-top: 20px;
+  }
+  .doc .doctag {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--warn); background: var(--warn-soft);
+    padding: 2px 10px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .doc h3 { font-size: 17px; margin: 0 0 4px; font-weight: 800; }
+  .doc .meta { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px; }
+  .doc h4 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 22px 0 8px; }
+  .doc ol, .doc ul { margin: 0; padding-left: 22px; font-size: 14px; }
+  .doc li { margin: 3px 0; }
+  .doc p { font-size: 14px; margin: 8px 0; max-width: 66ch; }
+  .doc .hashtags { font-size: 13.5px; color: var(--accent); font-weight: 600; }
+  .sanit { background: var(--halt-soft); text-decoration: line-through; padding: 0 4px; border-radius: 3px; }
+  .sanit-to { background: var(--accent-soft); padding: 0 4px; border-radius: 3px; font-weight: 600; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .card b.t { font-size: 14px; display: block; margin-bottom: 8px; }
+  .card ul { margin: 0; padding-left: 20px; font-size: 13.5px; }
+  .card li { margin: 4px 0; }
+
+  /* 테이블 */
+  .tblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 20px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th {
+    text-align: left; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 700; padding: 12px 16px;
+    border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td .path { white-space: nowrap; }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill.done { background: var(--accent-soft); color: var(--accent); }
+  .pill.mock { background: var(--warn-soft); color: var(--warn); }
+  .pill.todo { background: var(--stub-soft); color: var(--stub); }
+
+  footer { margin-top: 64px; font-size: 12.5px; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <p class="eyebrow">scatup · 블로그 콘텐츠 AX 에이전트</p>
+  <h1>전체 파이프라인 가동 — 첫 결과물이 나왔습니다</h1>
+  <p class="lede">
+    Step 1~9가 <strong>API 키 없이 끝까지 실행</strong>되어 블로그 초안과 트렌드 리포트가
+    파일로 저장됩니다. 네이버·유튜브 수집은 샘플 데이터 모드로 동작하며, <code>.env</code>에
+    키를 넣으면 실제 API 수집으로 자동 전환되는 구조입니다.
+  </p>
+
+  <div class="stats">
+    <div class="stat accent"><div class="num">9 / 9</div><div class="lbl">전체 Step 실행 (끝까지 도달)</div></div>
+    <div class="stat accent"><div class="num">1,540자</div><div class="lbl">생성된 초안 본문 + 제목 3안</div></div>
+    <div class="stat accent"><div class="num">31개</div><div class="lbl">확장 키워드 (실제 네이버 연관검색어)</div></div>
+    <div class="stat warn"><div class="num">검수 대기</div><div class="lbl">fail-safe 발동 → 담당자 승인 후 발행</div></div>
+  </div>
+
+  <h2>실행 흐름 (python run.py)</h2>
+  <p class="sub">한 번의 실행으로 수집 → 정제 → 인사이트 → 초안 → 의료법 필터 → 저장까지 완주합니다.</p>
+  <div class="flow">
+    <span class="fstep">1 키워드 확장 31개</span><span class="farrow">→</span>
+    <span class="fstep">2·3 수집 40건</span><span class="farrow">→</span>
+    <span class="fstep">4 정제 38건</span><span class="farrow">→</span>
+    <span class="fstep">5 인사이트</span><span class="farrow">→</span>
+    <span class="fstep">6 기획</span><span class="farrow">→</span>
+    <span class="fstep">7 RAG 근거 3건</span><span class="farrow">→</span>
+    <span class="fstep">8 초안 생성</span><span class="farrow">→</span>
+    <span class="fstep gate">9 의료법 필터</span><span class="farrow">→</span>
+    <span class="fstep haltf">검수 대기 저장</span>
+  </div>
+
+  <div class="runbox">
+    <div class="rline ok"><span class="k">[START]</span> trigger=scheduled, seeds=['난청', '보청기', '보청기 정부지원', '보청기 가격비교', '이명', '안들림']</div>
+    <div class="rline ok"><span class="k">[EXPAND]</span> 시드 6개 → 확장 31개 ('돌발성 난청', '보청기 정부지원금 자격', '이명원인' …)</div>
+    <div class="rline mock"><span class="k">[MOCK]</span> 네이버 API 키 미설정 → 샘플 데이터 모드 (키워드 10개 × 3채널)</div>
+    <div class="rline mock"><span class="k">[MOCK]</span> 유튜브 API 키 미설정 → 샘플 데이터 모드 (키워드 5개 × 2영상)</div>
+    <div class="rline ok"><span class="k">[REFINE]</span> 수집 40건 → 관련성 필터 후 38건 (에어팟·이명학 등 노이즈 제외)</div>
+    <div class="rline ok"><span class="k">[INSIGHT]</span> 급상승 토픽 5개: 보청기 · 난청 · 보청기 가격 · 이명 · 청력 검사</div>
+    <div class="rline ok"><span class="k">[PLAN]</span> 주제: 부모님 보청기 신청 방법 총정리 (타겟: 40~50대 자녀 세대)</div>
+    <div class="rline ok"><span class="k">[RAG]</span> 지식베이스 5종 중 근거 문서 3건 확보</div>
+    <div class="rline ok"><span class="k">[DRAFT]</span> 제목 3안 + 본문 1540자 + 해시태그 7개 생성</div>
+    <div class="rline warnl"><span class="k">[COMPLIANCE]</span> 1단계 자동 순화 1건: '완치된다' → '호전을 기대할 수 있다'</div>
+    <div class="rline warnl"><span class="k">[COMPLIANCE]</span> 법령 API 키 미설정 → fail-safe: 전건 '담당자 판단 필요' (자동 통과 금지)</div>
+    <div class="rline haltl"><span class="k">[OUTPUT]</span> data/outputs/run_20260708_152945/ 에 draft.md + report.md 저장</div>
+    <div class="rline haltl"><span class="k">[HALTED]</span> 초안은 생성 완료, 담당자 검수 대기</div>
+  </div>
+  <p class="runnote">
+    마지막 [HALTED]는 오류가 아니라 <strong>규칙 §7-3 fail-safe가 설계대로 발동한 것</strong>입니다.
+    법령 API 미연동 상태에서는 어떤 초안도 자동 통과시키지 않고 담당자 검수로 넘깁니다.
+  </p>
+
+  <h2>결과물 ① 블로그 초안 (draft.md)</h2>
+  <p class="sub">실제 생성된 파일 내용 요약입니다. 근거 문서 발췌가 본문에 녹아 있습니다.</p>
+  <div class="doc">
+    <span class="doctag">검수 대기 · needs_human_review</span>
+    <h3>부모님 보청기 신청 방법 총정리</h3>
+    <div class="meta">제목 1안 · 저작권 유사도 0.00 · 근거 문서 3건 첨부</div>
+
+    <h4>제목 3안</h4>
+    <ol>
+      <li>부모님 보청기 신청 방법 총정리</li>
+      <li>보청기, 부모님을 위해 알아봤습니다</li>
+      <li>부모님이 자꾸 되물으신다면 — 자녀가 먼저 챙기는 청력 관리</li>
+    </ol>
+
+    <h4>본문 (발췌)</h4>
+    <p>부모님과 통화할 때 같은 말을 두세 번 반복하게 되진 않으신가요? TV 볼륨이 예전보다 훌쩍 커졌다면, 그냥 지나칠 일이 아닐 수 있습니다. …</p>
+    <p>커뮤니티에는 '보청기만 하면 <span class="sanit">완치된다</span><span class="sanit-to">호전을 기대할 수 있다</span>'는 광고성 글도 보이지만, 보청기는 치료 기기가 아니라 듣기를 돕는 재활 도구이며 효과는 개인차가 있습니다. — <em>의료법 필터가 자동 순화한 부분</em></p>
+    <p>가격이 부담된다면 청각장애 등록 시 국민건강보험의 보청기 급여(5년 1회)를 활용할 수 있습니다. 기준은 바뀔 수 있으니 국민건강보험공단(1577-1000)에서 최신 조건을 꼭 확인하세요.</p>
+
+    <h4>해시태그</h4>
+    <p class="hashtags">#보청기 #난청 #보청기가격 #이명 #청력검사 #효도 #부모님건강</p>
+
+    <h4>근거 문서 (RAG)</h4>
+    <ul>
+      <li>01_난청의_이해.md</li>
+      <li>02_보청기의_종류와_선택.md</li>
+      <li>04_이명의_원인과_관리.md</li>
+    </ul>
+  </div>
+
+  <h2>결과물 ② 트렌드 인사이트 리포트 (report.md)</h2>
+  <p class="sub">담당자가 소재를 고를 때 참고하는 요약 리포트입니다.</p>
+  <div class="cols">
+    <div class="card">
+      <b class="t">📈 급상승 토픽</b>
+      <ul>
+        <li>보청기 / 난청 / 보청기 가격</li>
+        <li>이명 / 청력 검사</li>
+      </ul>
+    </div>
+    <div class="card">
+      <b class="t">💬 감성 포인트</b>
+      <ul>
+        <li>가격 부담·비용 문의 多 (정부지원 정보 수요)</li>
+        <li>자녀 세대가 부모님을 위해 알아보는 흐름</li>
+        <li>치료효과 단정형 과장 광고에 대한 불신</li>
+        <li>착용 적응기 경험담에 대한 높은 관심</li>
+      </ul>
+    </div>
+    <div class="card">
+      <b class="t">💡 소재 후보</b>
+      <ul>
+        <li>부모님 보청기 신청 방법 총정리</li>
+        <li>부모님이 자꾸 되물으신다면? 난청 자가 점검 신호 5가지</li>
+        <li>보청기 가격, 부담 줄이는 정부지원 제도 활용법</li>
+      </ul>
+    </div>
+    <div class="card">
+      <b class="t">🛡️ 안전장치 작동 기록</b>
+      <ul>
+        <li>1단계 순화: '완치' 표현 자동 교체</li>
+        <li>fail-safe: 법령 API 미연동 → 전건 검수 대기</li>
+        <li>발행 경로 차단 (사람 승인 필수)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>모듈별 구현 현황</h2>
+  <p class="sub">전 단계에 실제 로직이 들어갔습니다. 남은 것은 실 API 키 연동뿐입니다.</p>
+  <div class="tblwrap">
+    <table>
+      <thead>
+        <tr><th>영역</th><th>파일</th><th>상태</th><th>비고</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>키워드 확장</td><td><span class="path">collectors/keyword_expander.py</span></td><td><span class="pill done">실 데이터 동작</span></td><td>네이버 연관검색어 API (키 불필요)</td></tr>
+        <tr><td>네이버 수집</td><td><span class="path">collectors/naver_collector.py</span></td><td><span class="pill mock">샘플 모드</span></td><td>키 입력 시 blog·cafe·news 실수집 전환</td></tr>
+        <tr><td>유튜브 수집</td><td><span class="path">collectors/youtube_collector.py</span></td><td><span class="pill mock">샘플 모드</span></td><td>쿼터 절약 규칙·댓글 비활성 처리 포함</td></tr>
+        <tr><td>정제 (Step 4)</td><td><span class="path">processing/refiner.py</span></td><td><span class="pill done">구현 완료</span></td><td>주제어 스코어링 + 노이즈 필터</td></tr>
+        <tr><td>인사이트 (Step 5)</td><td><span class="path">processing/insight.py</span></td><td><span class="pill done">구현 완료</span></td><td>토픽·감성·소재 후보 도출</td></tr>
+        <tr><td>기획 (Step 6)</td><td><span class="path">content/planner.py</span></td><td><span class="pill done">구현 완료</span></td><td>타겟 고객 기준 SEO·목차·톤 설계</td></tr>
+        <tr><td>RAG (Step 7)</td><td><span class="path">content/rag.py</span></td><td><span class="pill done">구현 완료</span></td><td>지식베이스 5종 문서 키워드 검색</td></tr>
+        <tr><td>초안 생성 (Step 8)</td><td><span class="path">content/draft_generator.py</span></td><td><span class="pill done">템플릿 방식</span></td><td>Claude API 연동 시 품질 향상 예정</td></tr>
+        <tr><td>의료법 필터 (Step 9)</td><td><span class="path">compliance/</span></td><td><span class="pill done">구현 완료</span></td><td>2단계 판정 + fail-safe (자동 통과 금지)</td></tr>
+        <tr><td>재확장·재수집 (§6)</td><td><span class="path">decision/branches.py</span></td><td><span class="pill done">구현 완료</span></td><td>데이터 부족 시 연관검색어로 재시도</td></tr>
+        <tr><td>출력 검증·저장</td><td><span class="path">output/</span></td><td><span class="pill done">구현 완료</span></td><td>표절 유사도 검사 + draft/report 파일 저장</td></tr>
+        <tr><td>실 API 연동</td><td><span class="path">.env</span></td><td><span class="pill todo">키 대기</span></td><td>NAVER · YOUTUBE · LAW · ANTHROPIC 키 입력 시 전환</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    기준: <code>scatup</code> 저장소 커밋 48081bf (GitHub 반영 완료) · 실행 산출물은 <code>data/outputs/run_*/</code>에 저장 ·
+    발행은 항상 사람이 직접 수행 (rule §1-2)
+  </footer>
+</div>
+
+</body>
+</html>
