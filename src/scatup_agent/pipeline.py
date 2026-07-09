@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from .models.schemas import PipelineContext, TriggerType
 from .collectors import keyword_expander, naver_collector, youtube_collector
-from .processing import refiner, insight as insight_step
+from .processing import refiner, insight as insight_step, keyword_miner
 from .content import planner, rag, draft_generator
 from .compliance import medical_law
 from .output import deliverer, validators
@@ -42,6 +42,13 @@ def run_pipeline(trigger: TriggerType, seed_keywords: list[str]) -> PipelineCont
     # Step 4 · 데이터 정제 (관련성 스코어링)
     with guard(ctx, step="Step 4 데이터 정제"):
         ctx.collected = refiner.score_and_refine(ctx.collected)
+
+    # 신규 키워드 발굴 — 수집 원문에서 시드 밖 소주제를 찾아 다음 주기 시드로 편입 (§5 Step 1 보강)
+    with guard(ctx, step="신규 키워드 발굴"):
+        mined = keyword_miner.mine(ctx.collected, known=ctx.expanded_keywords)
+        if mined:
+            keyword_miner.remember(mined)
+            print(f"[MINE] 수집 원문에서 신규 키워드 {len(mined)}개 발굴 → 다음 주기 시드 편입: {mined}")
 
     # Step 5 · 인사이트 도출
     with guard(ctx, step="Step 5 인사이트 도출"):

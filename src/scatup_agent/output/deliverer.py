@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -18,7 +19,11 @@ def deliver(ctx: PipelineContext) -> None:
     """산출물 저장 + 담당자 알림. '검수 대기' 등록까지만 수행한다."""
     out_dir = None
     if ctx.draft and (ctx.draft.title_options or ctx.draft.body):
-        out_dir = _save_outputs(ctx)
+        if _is_duplicate(ctx.draft):
+            # 같은 제목 초안이 이미 있으면 저장하지 않는다 (중복 누적 방지)
+            print("[DEDUP] 동일 제목 초안이 이미 있어 저장을 생략합니다")
+        else:
+            out_dir = _save_outputs(ctx)
 
     if ctx.halted:
         _notify(f"[담당자 판단 필요] {ctx.halt_reason}")
@@ -27,6 +32,22 @@ def deliver(ctx: PipelineContext) -> None:
 
     if out_dir:
         print(f"[OUTPUT] 초안·리포트 저장 완료 → {out_dir}")
+
+
+def _is_duplicate(draft) -> bool:
+    """기존 저장 초안 중 동일한 대표 제목이 있으면 True (중복 방지)."""
+    if not draft.title_options:
+        return False
+    new_title = _norm(draft.title_options[0])
+    for draft_path in _OUTPUT_DIR.glob("run_*/draft.md"):
+        m = re.search(r"^1\.\s*(.+)$", draft_path.read_text(encoding="utf-8"), re.M)
+        if m and _norm(m.group(1)) == new_title:
+            return True
+    return False
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"\s+", "", text)
 
 
 def _save_outputs(ctx: PipelineContext) -> Path:

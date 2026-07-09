@@ -7,6 +7,9 @@ API 키 없이도 전체 파이프라인 흐름을 확인할 수 있다.
 from __future__ import annotations
 
 import hashlib
+import re
+
+import requests
 
 from config.settings import settings
 
@@ -14,6 +17,19 @@ from ..models.schemas import CollectedItem, SourceChannel
 
 # 샘플 모드에서 수집을 시뮬레이션할 키워드 수 (실 연동 시 제거)
 _SAMPLE_KEYWORD_LIMIT = 10
+
+# 실 연동 시 쿼터/응답시간 관리를 위한 키워드 상한 및 채널별 조회 건수
+_REAL_KEYWORD_LIMIT = 10
+_ITEMS_PER_QUERY = 5
+_TIMEOUT_SECONDS = 5
+
+_SEARCH_ENDPOINT_BY_CHANNEL = {
+    SourceChannel.NAVER_BLOG: "blog",
+    SourceChannel.NAVER_CAFE: "cafearticle",
+    SourceChannel.NAVER_NEWS: "news",
+}
+
+_TAG_RE = re.compile(r"<[^>]+>")
 
 # (채널, 제목 템플릿, 본문 템플릿) — 실제 커뮤니티에서 자주 보이는 글 유형을 모사
 _SAMPLE_TEMPLATES = [
@@ -46,9 +62,46 @@ def collect(keywords: list[str]) -> list[CollectedItem]:
     if not (settings.naver_client_id and settings.naver_client_secret):
         return _collect_samples(keywords)
 
-    # TODO(담당): 네이버 검색 API(blog/cafe/news) 실연동
-    # §4-2: API 응답 오류 시 해당 소스만 skip (전체 중단 금지)
-    return []
+    items: list[CollectedItem] = []
+    targets = keywords[:_REAL_KEYWORD_LIMIT]
+    for keyword in targets:
+        for channel, endpoint in _SEARCH_ENDPOINT_BY_CHANNEL.items():
+            try:
+                items += _search(channel, endpoint, keyword)
+            except (requests.RequestException, ValueError, KeyError) as err:
+                # §4-2: API 응답 오류 시 해당 소스만 skip (전체 중단 금지)
+                print(f"[NAVER] {channel.value} 검색 실패(키워드={keyword}): {err} → skip")
+    print(f"[NAVER] 검색 API 수집 {len(items)}건 (키워드 {len(targets)}개 × 3채널)")
+    return items
+
+
+def _search(channel: SourceChannel, endpoint: str, keyword: str) -> list[CollectedItem]:
+    """네이버 검색 API(blog/cafearticle/news) 1회 호출."""
+    resp = requests.get(
+        f"{settings.naver_openapi_base}/search/{endpoint}.json",
+        headers={
+            "X-Naver-Client-Id": settings.naver_client_id,
+            "X-Naver-Client-Secret": settings.naver_client_secret,
+        },
+        params={"query": keyword, "display": _ITEMS_PER_QUERY, "sort": "sim"},
+        timeout=_TIMEOUT_SECONDS,
+    )
+    resp.raise_for_status()
+    return [
+        CollectedItem(
+            channel=channel,
+            title=_strip_tags(entry.get("title", "")),
+            url=entry.get("link", ""),
+            text=_strip_tags(entry.get("description", "")),
+            raw=entry,
+        )
+        for entry in resp.json().get("items", [])
+    ]
+
+
+def _strip_tags(text: str) -> str:
+    """검색 API 응답의 <b> 강조 태그 등을 제거한다."""
+    return _TAG_RE.sub("", text).strip()
 
 
 def _collect_samples(keywords: list[str]) -> list[CollectedItem]:

@@ -13,31 +13,39 @@ _TOP_K = 3
 
 
 def search_evidence(plan: dict) -> list[dict]:
-    """기획안의 주제·SEO 키워드와 겹치는 지식베이스 문서를 찾는다.
+    """기획안의 앵글·키워드에 맞는 지식베이스 근거를 찾는다.
 
-    반환: [{"doc": 문서명, "snippet": 발췌, "score": 매칭 점수}, ...]
+    앵글의 핵심 문서(primary_docs)는 정확한 용어·사실 근거가 되도록 '전체 내용'을
+    제공하고, 그 외 키워드 관련 문서는 발췌(snippet)로 보강한다. 이렇게 하면 초안이
+    AI 자체 지식이 아니라 근거 자료 기반으로 작성돼 용어·수치 오류를 줄인다.
+
+    반환: [{"doc": 문서명, "snippet": 근거 내용, "score": 매칭 점수}, ...]
     """
     if not _KB_DIR.exists():
         return []  # 근거 부족 → §6 분기에서 처리
 
-    query_terms = _query_terms(plan)
-    scored: list[dict] = []
-    for doc_path in sorted(_KB_DIR.glob("*.md")):
-        text = doc_path.read_text(encoding="utf-8")
-        score = sum(text.count(term) for term in query_terms)
-        if score <= 0:
-            continue
-        scored.append(
-            {
-                "doc": doc_path.name,
-                "snippet": _best_snippet(text, query_terms),
-                "score": score,
-            }
-        )
+    docs = {p.name: p.read_text(encoding="utf-8") for p in sorted(_KB_DIR.glob("*.md"))}
+    primary = [name for name in plan.get("primary_docs", []) if name in docs]
 
-    top = sorted(scored, key=lambda e: e["score"], reverse=True)[:_TOP_K]
-    print(f"[RAG] 지식베이스 {len(list(_KB_DIR.glob('*.md')))}종 중 근거 문서 {len(top)}건 확보")
-    return top
+    evidence: list[dict] = []
+    # 1) 앵글 핵심 문서 → 전체 내용으로 확실히 포함 (정확한 용어·사실의 근거)
+    for name in primary:
+        evidence.append({"doc": name, "snippet": docs[name].strip(), "score": 10_000})
+
+    # 2) 키워드 관련 문서 → 발췌로 보강 (핵심 문서 제외)
+    query_terms = _query_terms(plan)
+    scored = []
+    for name, text in docs.items():
+        if name in primary:
+            continue
+        score = sum(text.count(term) for term in query_terms)
+        if score > 0:
+            scored.append({"doc": name, "snippet": _best_snippet(text, query_terms), "score": score})
+    scored.sort(key=lambda e: e["score"], reverse=True)
+    evidence += scored[: max(0, _TOP_K - len(evidence))]
+
+    print(f"[RAG] 지식베이스 {len(docs)}종 중 근거 {len(evidence)}건 확보 (핵심 문서 {len(primary)}건 전체 반영)")
+    return evidence
 
 
 def _query_terms(plan: dict) -> list[str]:

@@ -1,7 +1,7 @@
 """Step 4 · 데이터 정제 (rule §5 Step 4).
 
 수집 데이터의 관련성 스코어링 및 정제.
-현재는 규칙 기반 스코어링이며, 추후 Claude 프롬프트 스코어링으로 교체 가능.
+현재는 규칙 기반 스코어링이며, 추후 Mistral 프롬프트 스코어링으로 교체 가능.
 """
 from __future__ import annotations
 

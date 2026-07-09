@@ -10,11 +10,13 @@ from config.settings import settings
 from .models.schemas import TriggerType
 from .trigger import scheduler
 from .pipeline import run_pipeline
+from .processing import keyword_miner
 
 
 def main() -> None:
     trigger = scheduler.detect_event_trigger() or TriggerType.SCHEDULED
-    seed_keywords = list(settings.seed_keywords)
+    # 기본 시드 + 이전 주기에 수집 원문에서 발굴한 신규 키워드 (§5 Step 1 보강)
+    seed_keywords = list(dict.fromkeys(list(settings.seed_keywords) + keyword_miner.recall()))
 
     print(f"[START] trigger={trigger.value}, seeds={seed_keywords}")
     ctx = run_pipeline(trigger, seed_keywords)

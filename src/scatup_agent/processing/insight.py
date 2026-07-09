@@ -44,12 +44,23 @@ def derive(items: list[CollectedItem]) -> TrendInsight:
         if any(cue in all_text for cue in cues)
     ]
 
-    # 소재 후보: 상위 토픽 × 타겟 고객(40~50대 자녀 세대) 관점
-    candidates = [
-        f"부모님 {rising[0]} 신청 방법 총정리" if rising else "부모님 청력 관리 가이드",
-        "부모님이 자꾸 되물으신다면? 난청 자가 점검 신호 5가지",
-        "보청기 가격, 부담 줄이는 정부지원 제도 활용법",
-    ]
+    # 소재 후보: 데이터 신호 기반 + 타겟(40~50대 자녀 세대) 관점, 어법에 맞는 제목만.
+    # '신청 방법'은 신청 가능한 대상(보청기·정부지원)에만 붙이고 상태어(난청·이명)엔 붙이지 않는다.
+    signal = " ".join(rising) + " " + " ".join(sentiments)
+    candidates: list[str] = []
+    if any(k in signal for k in ("정부지원", "지원", "가격", "부담", "비용", "보조금")):
+        candidates.append("부모님 보청기 정부지원, 신청 자격부터 절차까지 총정리")
+    if any(k in signal for k in ("치매", "인지")):
+        candidates.append("난청을 방치하면 치매 위험이? 부모님 청력이 뇌 건강인 이유")
+    if "이명" in signal:
+        candidates.append("부모님 이명(귀울림), 원인부터 일상 관리법까지")
+    for fallback in (
+        "부모님 난청, 이런 신호면 청력 검사받으세요 — 자가 점검 가이드",
+        "부모님 첫 보청기, 후회 없이 고르는 종류·선택 가이드",
+        "부모님 청력 관리, 지금 시작하는 법",
+    ):
+        candidates.append(fallback)
+    candidates = list(dict.fromkeys(candidates))[:3]
 
     result = TrendInsight(
         rising_topics=rising,

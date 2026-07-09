@@ -42,6 +42,7 @@ class SensitivityFlag(str, Enum):
     EVIDENCE_MISSING = "evidence_missing"     # RAG 근거 부족
     QUALITY_FAIL = "quality_fail"             # 문장 품질 미달
     PLAGIARISM = "plagiarism"                 # 표절 유사도 초과
+    UNVERIFIED_FACT = "unverified_fact"       # 근거 문서에 없는 수치·통계 (할루시네이션 의심)
 
 
 @dataclass

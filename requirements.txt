@@ -3,17 +3,17 @@
 # 아래는 각 Step 구현 시 사용할 대표 라이브러리이며, 팀에서 조정하세요.
 
 # --- HTTP / API 호출 (네이버·유튜브·법령 API) ---
-# requests>=2.31
+requests>=2.31
 
-# --- Claude API (전처리·스코어링·초안 생성) ---
-# anthropic>=0.39
+# --- Mistral AI API (전처리·스코어링·초안 생성) ---
+# requests 로 REST 직접 호출 (위 HTTP 섹션의 requests 로 충분, 별도 SDK 불필요)
 
 # --- RAG 지식베이스 (난청 5종 문서) ---
 # chromadb>=0.5
 # sentence-transformers>=3.0
 
 # --- 환경변수 로드 ---
-# python-dotenv>=1.0
+python-dotenv>=1.0
 
 # --- 유튜브 Data API ---
 # google-api-python-client>=2.0

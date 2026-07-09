@@ -14,3 +14,5 @@ Thumbs.db
 
 # 실행 산출물 (검수용 로컬 파일)
 data/outputs/
+data/.youtube_quota.json
+data/discovered_keywords.json
