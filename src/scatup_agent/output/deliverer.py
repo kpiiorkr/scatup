@@ -6,12 +6,17 @@
 from __future__ import annotations
 
 from datetime import timezone, timedelta
+from pathlib import Path
 
 from ..models.schemas import PipelineContext, TriggerType
 from . import github_issues
 from config.settings import settings
 
 _KST = timezone(timedelta(hours=9))
+
+# 검수 대시보드(build_dashboard.py)가 스캔하는 run 산출물 폴더.
+# 이 파일 기준 프로젝트 루트: .../scatup/src/scatup_agent/output/deliverer.py → parents[3]
+OUTPUTS_DIR = Path(__file__).resolve().parents[3] / "data" / "outputs"
 
 
 def _kst(ctx: PipelineContext):
@@ -42,6 +47,9 @@ def deliver(ctx: PipelineContext) -> None:
             _notify(f"[담당자 판단 필요] {ctx.halt_reason}")
         return
 
+    # 검수 대시보드가 읽을 수 있도록 초안·리포트를 디스크에도 남긴다(Issue 등록과 별개).
+    _persist_run(ctx)
+
     rep_title = ctx.draft.title_options[0] if ctx.draft.title_options else "(제목 없음)"
     title = github_issues.draft_issue_title(rep_title, _kst(ctx).strftime("%Y-%m-%d"))
     body = _issue_body(ctx)
@@ -61,6 +69,20 @@ def deliver(ctx: PipelineContext) -> None:
         print(body)  # 유실 방지: 실패 시 본문을 로그에 남긴다
         raise RuntimeError("GitHub Issue 생성 실패 (토큰은 있으나 API 오류)")
     print(f"[ISSUE] 검수 대기 Issue 생성 → {url}")
+
+
+def _persist_run(ctx: PipelineContext) -> None:
+    """검수 대시보드(build_dashboard.py)가 스캔하는 run 산출물을 디스크에 남긴다.
+
+    대시보드는 data/outputs/run_*/draft.md·report.md 를 읽으므로, Issue 등록과
+    별개로 동일 형식의 파일을 남겨 대시보드에 반영되게 한다. 폴더명은 파서가
+    인식하는 `run_YYYYMMDD_HHMMSS`(KST) 형식을 따른다.
+    """
+    run_dir = OUTPUTS_DIR / f"run_{_kst(ctx):%Y%m%d_%H%M%S}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "draft.md").write_text(_render_draft(ctx), encoding="utf-8")
+    (run_dir / "report.md").write_text(_render_report(ctx), encoding="utf-8")
+    print(f"[SAVE] 검수 산출물 저장 → {run_dir}")
 
 
 def _labels(ctx: PipelineContext) -> list[str]:

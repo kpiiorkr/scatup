@@ -15,6 +15,12 @@ from scatup_agent.output import deliverer  # noqa: E402
 from scatup_agent.output import github_issues  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _tmp_outputs(tmp_path, monkeypatch):
+    """deliver() 가 실제 data/outputs 를 오염시키지 않도록 임시 폴더로 리다이렉트한다."""
+    monkeypatch.setattr(deliverer, "OUTPUTS_DIR", tmp_path / "outputs")
+
+
 def _ctx(halted=False, trigger=TriggerType.SCHEDULED):
     ctx = PipelineContext(trigger=trigger, seed_keywords=["난청"])
     ctx.insight = TrendInsight(rising_topics=["난청"], sentiment_points=[], topic_candidates=[])
@@ -86,3 +92,17 @@ def test_deliver_raises_on_api_failure(monkeypatch):
     monkeypatch.setattr(github_issues, "create_issue", lambda *a, **k: None)
     with pytest.raises(RuntimeError):
         deliverer.deliver(_ctx())
+
+
+def test_deliver_persists_run_files_for_dashboard(monkeypatch):
+    """대시보드(build_dashboard.py)가 읽는 run_*/draft.md·report.md 를 남기는지 확인."""
+    monkeypatch.setattr(github_issues, "enabled", lambda: False)
+    deliverer.deliver(_ctx())
+
+    runs = list(deliverer.OUTPUTS_DIR.glob("run_*"))
+    assert len(runs) == 1
+    assert re.match(r"run_\d{8}_\d{6}$", runs[0].name)
+    draft_md = (runs[0] / "draft.md").read_text(encoding="utf-8")
+    report_md = (runs[0] / "report.md").read_text(encoding="utf-8")
+    assert "블로그 초안" in draft_md and "제목 3안" in draft_md
+    assert "트렌드 인사이트 리포트" in report_md
