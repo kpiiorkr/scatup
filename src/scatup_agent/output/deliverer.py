@@ -5,9 +5,19 @@
 """
 from __future__ import annotations
 
+from datetime import timezone, timedelta
+
 from ..models.schemas import PipelineContext, TriggerType
 from . import github_issues
 from config.settings import settings
+
+_KST = timezone(timedelta(hours=9))
+
+
+def _created_kst(ctx: PipelineContext) -> str:
+    """생성 시각을 KST로 표기한다. created_at은 실행 환경(Actions=UTC) 기준 naive이므로
+    UTC로 간주해 KST로 변환한다."""
+    return ctx.created_at.replace(tzinfo=timezone.utc).astimezone(_KST).strftime("%Y-%m-%d %H:%M")
 
 _CHECKLIST = (
     "## 검수 체크리스트 (rule §10)\n"
@@ -77,6 +87,7 @@ def _render_draft(ctx: PipelineContext) -> str:
     lines = [
         "# 블로그 초안 (검수 대기)",
         "",
+        f"> 📅 생성일: {_created_kst(ctx)} (KST) · 트리거: {ctx.trigger.value}",
         f"> 상태: **{status}** · 민감도 플래그: {flags} · 저작권 유사도: {d.metadata.similarity_score:.2f}",
         "> ⚠️ 발행은 담당자 승인 후 직접 수행합니다. 자동 발행 금지 (rule §1-2).",
         "",
@@ -100,7 +111,7 @@ def _render_report(ctx: PipelineContext) -> str:
     lines = [
         "# 트렌드 인사이트 리포트",
         "",
-        f"- 실행 시각: {ctx.created_at:%Y-%m-%d %H:%M}",
+        f"- 실행 시각: {_created_kst(ctx)} (KST)",
         f"- 트리거: {ctx.trigger.value}",
         f"- 시드 키워드: {', '.join(ctx.seed_keywords)}",
         f"- 확장 키워드: {len(ctx.expanded_keywords)}개",

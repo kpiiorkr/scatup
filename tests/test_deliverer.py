@@ -46,6 +46,8 @@ def test_deliver_creates_issue_with_cleared_labels(monkeypatch):
     assert "발행 승인" in captured["body"]
     assert "검수 방법" in captured["body"]
     assert "docs/review-guide.md" in captured["body"]
+    assert "생성일" in captured["body"]
+    assert "(KST)" in captured["body"]
 
 
 def test_deliver_attention_and_rising_labels(monkeypatch):
