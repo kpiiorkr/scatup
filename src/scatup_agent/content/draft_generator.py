@@ -126,9 +126,11 @@ def _has_foreign_script(texts: list[str]) -> bool:
 
 
 def _strip_english(text: str) -> str:
-    """분리된 소문자 영어 단어만 제거한다. 대문자 약어(BTE·RIC·TV·dB)는 보존."""
-    text = re.sub(r"(?<![A-Za-z])[a-z]{2,}(?![A-Za-z])", "", text)
-    text = re.sub(r"\(\s*[/·,\s]*\)", "", text)   # 내용 없이 남은 괄호
+    """분리된 영어 단어를 제거한다. 소문자 단어(sound)뿐 아니라 대문자로 시작하는
+    단어(Emergency·Consensus·Lancet)도 지운다. 전부 대문자 약어(BTE·RIC·CIC·ITE·ITC·TV)와
+    dB는 보존한다(대문자 시작+소문자 패턴이 아니라서 자동으로 남는다)."""
+    text = re.sub(r"(?<![A-Za-z])(?:[a-z]{2,}|[A-Z][a-z]+)(?![A-Za-z])", "", text)
+    text = re.sub(r"\(\s*[/·:,\s]*\)", "", text)   # 내용 없이 남은 괄호((), (예:) 등)
     text = re.sub(r"[ \t]{2,}", " ", text)
     return re.sub(r" +([,.!?)|·])", r"\1", text)
 

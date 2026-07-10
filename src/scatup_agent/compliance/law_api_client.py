@@ -6,17 +6,43 @@ LAW_API_KEY 미설정/조회 실패 시 LawApiError 를 raise → fail-safe(§7-
 """
 from __future__ import annotations
 
+import time
+
 import requests
 
 from config.settings import settings
 
 _TARGET_LAW_NAME = "의료법"
 _TARGET_ARTICLE_NO = "56"
-_TIMEOUT_SECONDS = 10
+# (connect, read) 타임아웃. law.go.kr은 해외(예: GitHub Actions 러너)에서 연결이 느려
+# connect 단계에서 자주 타임아웃 나므로 connect 여유를 크게 준다.
+_TIMEOUT = (20, 25)
+_MAX_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = 2
 
 
 class LawApiError(Exception):
     """법령 API 응답 실패/타임아웃 (fail-safe 트리거, §7-3)."""
+
+
+def _get(url: str, params: dict) -> requests.Response:
+    """GET을 재시도와 함께 수행한다. 마지막 시도까지 실패하면 예외를 그대로 올린다.
+
+    (일시적 지연·연결 실패를 흡수하려는 것일 뿐, 최종 실패 시에는 fail-safe(§7-3)로 간다.)
+    """
+    last_err: requests.RequestException | None = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            resp = requests.get(url, params=params, timeout=_TIMEOUT)
+            resp.raise_for_status()
+            return resp
+        except requests.RequestException as err:
+            last_err = err
+            print(f"[LAW] 조회 실패 재시도 {attempt}/{_MAX_ATTEMPTS}: {err}")
+            if attempt < _MAX_ATTEMPTS:
+                time.sleep(_RETRY_BACKOFF_SECONDS)
+    assert last_err is not None
+    raise last_err
 
 
 def fetch_prohibition_clauses() -> list[str]:
@@ -44,7 +70,7 @@ def fetch_prohibition_clauses() -> list[str]:
 
 def _find_law_mst(law_name: str) -> str:
     """법령명으로 법령일련번호(MST)를 조회한다 (lawSearch.do)."""
-    resp = requests.get(
+    resp = _get(
         f"{settings.law_api_base}/lawSearch.do",
         params={
             "OC": settings.law_api_key,
@@ -53,9 +79,7 @@ def _find_law_mst(law_name: str) -> str:
             "query": law_name,
             "search": 1,
         },
-        timeout=_TIMEOUT_SECONDS,
     )
-    resp.raise_for_status()
     laws = _as_list(resp.json().get("LawSearch", {}).get("law"))
     for law in laws:
         if law.get("법령명한글") == law_name:
@@ -65,12 +89,10 @@ def _find_law_mst(law_name: str) -> str:
 
 def _fetch_article(mst: str, article_no: str) -> dict:
     """법령 본문을 조회해 지정한 조문번호의 조문단위를 반환한다 (lawService.do)."""
-    resp = requests.get(
+    resp = _get(
         f"{settings.law_api_base}/lawService.do",
         params={"OC": settings.law_api_key, "target": "law", "MST": mst, "type": "JSON"},
-        timeout=_TIMEOUT_SECONDS,
     )
-    resp.raise_for_status()
     units = _as_list(resp.json()["법령"]["조문"]["조문단위"])
     for unit in units:
         if unit.get("조문번호") == article_no and unit.get("조문여부") == "조문":
