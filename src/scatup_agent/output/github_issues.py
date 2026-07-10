@@ -42,8 +42,13 @@ def _headers() -> dict:
     }
 
 
-def draft_issue_title(rep_title: str) -> str:
-    return _TITLE_PREFIX + rep_title
+_DATE_RE = re.compile(r"^\(\d{4}-\d{2}-\d{2}\)\s*")
+
+
+def draft_issue_title(rep_title: str, date_str: str = "") -> str:
+    """검수 Issue 제목. 목록 화면에서도 보이도록 작성 날짜를 앞에 넣는다."""
+    date_part = f"({date_str}) " if date_str else ""
+    return f"{_TITLE_PREFIX}{date_part}{rep_title}"
 
 
 def repo_url(path: str = "") -> str:
@@ -53,8 +58,12 @@ def repo_url(path: str = "") -> str:
 
 
 def _norm_title(title: str) -> str:
-    """제목 접두사를 떼고 공백을 제거해 중복 비교용으로 정규화한다."""
+    """제목 접두사·날짜를 떼고 공백을 제거해 중복 비교용으로 정규화한다.
+
+    (중복은 날짜가 아니라 '주제(제목)' 기준으로 판단한다.)
+    """
     body = title[len(_TITLE_PREFIX):] if title.startswith(_TITLE_PREFIX) else title
+    body = _DATE_RE.sub("", body)
     return re.sub(r"\s+", "", body)
 
 

@@ -38,6 +38,12 @@ def test_enabled_reflects_env(monkeypatch):
 
 def test_draft_issue_title_prefix():
     assert gh.draft_issue_title("난청과 치매") == "[초안 검수] 난청과 치매"
+    assert gh.draft_issue_title("난청과 치매", "2026-07-10") == "[초안 검수] (2026-07-10) 난청과 치매"
+
+
+def test_norm_title_strips_prefix_and_date():
+    assert gh._norm_title("[초안 검수] (2026-07-10) 난청 방치 위험") == "난청방치위험"
+    assert gh._norm_title("[초안 검수] 난청 방치 위험") == "난청방치위험"
 
 
 def test_create_issue_disabled_returns_none(monkeypatch):
@@ -80,13 +86,13 @@ def test_open_draft_titles_normalizes_and_filters_pr(monkeypatch):
 
     def fake_get(url, headers=None, params=None, timeout=None):
         return FakeResp([
-            {"title": "[초안 검수] 난청 방치 위험"},
+            {"title": "[초안 검수] (2026-07-10) 난청 방치 위험"},
             {"title": "[초안 검수] 이명 관리법", "pull_request": {"url": "x"}},
         ])
 
     monkeypatch.setattr(gh.requests, "get", fake_get)
     titles = gh.open_draft_titles()
-    assert "난청방치위험" in titles
+    assert "난청방치위험" in titles  # 날짜 접두가 있어도 주제로 정규화
     assert all("이명" not in t for t in titles)  # PR 제외
 
 

@@ -1,3 +1,4 @@
+import re
 import sys
 from pathlib import Path
 
@@ -40,7 +41,7 @@ def test_deliver_creates_issue_with_cleared_labels(monkeypatch):
     monkeypatch.setattr(github_issues, "create_issue", fake_create)
     deliverer.deliver(_ctx(halted=False, trigger=TriggerType.SCHEDULED))
 
-    assert captured["title"] == "[초안 검수] 난청 방치 위험"
+    assert re.match(r"\[초안 검수\] \(\d{4}-\d{2}-\d{2}\) 난청 방치 위험$", captured["title"])
     assert captured["labels"] == ["scatup:draft", "trigger:scheduled", "승인 대기"]
     assert "검수 체크리스트" in captured["body"]
     assert "발행 승인" in captured["body"]
