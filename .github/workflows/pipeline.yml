@@ -13,6 +13,8 @@ on:
 permissions:
   contents: read                # checkout
   issues: write                 # Issue 생성/조회
+  pages: write                  # GitHub Pages 배포
+  id-token: write               # GitHub Pages 배포 인증(OIDC)
 
 concurrency:
   group: scatup-pipeline
@@ -21,6 +23,10 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    # Pages 배포는 github-pages 환경에서 이뤄진다. 배포된 URL이 실행 요약에 링크로 뜬다.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,6 +36,17 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      # CI는 매 실행마다 빈 상태로 시작하고 data/outputs 는 .gitignore 대상이라,
+      # 이전 실행의 검수 결과물(run_*)을 캐시에서 복원해 대시보드에 누적한다.
+      # (키가 매번 유일하므로 항상 miss → restore-keys 접두사로 '가장 최근' 캐시를 복원)
+      - name: Restore review history (검수 이력 누적)
+        uses: actions/cache@v4
+        with:
+          path: data/outputs
+          key: scatup-outputs-${{ github.run_id }}
+          restore-keys: |
+            scatup-outputs-
 
       - name: Run pipeline
         run: python run.py
@@ -41,3 +58,32 @@ jobs:
           MISTRAL_API_KEY:     ${{ secrets.MISTRAL_API_KEY }}
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
           FORCE_RUN:           ${{ inputs.force }}
+
+      # 누적된 run_* 를 스캔해 검수 데스크 대시보드(자체 완결 HTML)를 빌드한다.
+      # 초안이 하나도 없어도 '초안 없음' 화면이 생성되도록 폴더를 보장한다.
+      - name: Build review dashboard
+        run: |
+          mkdir -p data/outputs
+          python build_dashboard.py
+
+      # Pages 게시 루트(_site)에 대시보드를 index.html 로 배치한다.
+      - name: Assemble Pages site
+        run: |
+          mkdir -p _site
+          if [ -f data/outputs/dashboard.html ]; then
+            cp data/outputs/dashboard.html _site/index.html
+          else
+            printf '%s' '<!doctype html><meta charset="utf-8"><title>scatup 검수 데스크</title><p style="font-family:sans-serif;padding:2rem">아직 생성된 초안이 없습니다. 파이프라인이 초안을 만들면 이 페이지가 채워집니다.</p>' > _site/index.html
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
