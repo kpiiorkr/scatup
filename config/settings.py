@@ -63,6 +63,13 @@ class Settings:
     mistral_api_base: str = "https://api.mistral.ai/v1"
     mistral_model: str = "mistral-small-latest"  # 초안 생성(Step 8) 기본 모델, 팀에서 조정 가능
 
+    # --- GitHub Issue 라벨 (rule §9-2 검수 대기, §7 판정 결과) ---
+    label_draft: str = "scatup:draft"
+    label_trigger_scheduled: str = "trigger:scheduled"
+    label_trigger_rising: str = "trigger:rising"
+    label_cleared: str = "승인 대기"
+    label_attention: str = "🚨담당자 판단 필요"
+
     # --- 비밀값 (.env 에서 로드) ---
     naver_client_id: str = field(default_factory=lambda: os.getenv("NAVER_CLIENT_ID", ""))
     naver_client_secret: str = field(default_factory=lambda: os.getenv("NAVER_CLIENT_SECRET", ""))
