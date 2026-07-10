@@ -3,7 +3,12 @@ name: scatup content pipeline
 on:
   schedule:
     - cron: '0 0 * * *'        # 매일 00:00 UTC (= 09:00 KST). 급상승 감지 + 3일마다 정기 초안
-  workflow_dispatch: {}         # 수동 실행 버튼
+  workflow_dispatch:            # 수동 실행 버튼
+    inputs:
+      force:
+        description: '정기 주기(3일)를 무시하고 강제로 초안 생성'
+        type: boolean
+        default: false
 
 permissions:
   contents: read                # checkout
@@ -35,3 +40,4 @@ jobs:
           LAW_API_KEY:         ${{ secrets.LAW_API_KEY }}
           MISTRAL_API_KEY:     ${{ secrets.MISTRAL_API_KEY }}
           GITHUB_TOKEN:        ${{ secrets.GITHUB_TOKEN }}
+          FORCE_RUN:           ${{ inputs.force }}

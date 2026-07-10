@@ -26,7 +26,16 @@ def test_skip_when_within_interval(monkeypatch):
     monkeypatch.setattr(scheduler, "detect_event_trigger", lambda: None)
     monkeypatch.setattr(github_issues, "enabled", lambda: True)
     monkeypatch.setattr(github_issues, "days_since_last_scheduled", lambda: 1)
+    monkeypatch.delenv("FORCE_RUN", raising=False)
     assert main._resolve_trigger() is None
+
+
+def test_force_run_bypasses_interval_gate(monkeypatch):
+    monkeypatch.setattr(scheduler, "detect_event_trigger", lambda: None)
+    monkeypatch.setattr(github_issues, "enabled", lambda: True)
+    monkeypatch.setattr(github_issues, "days_since_last_scheduled", lambda: 1)
+    monkeypatch.setenv("FORCE_RUN", "true")
+    assert main._resolve_trigger() == TriggerType.SCHEDULED
 
 
 def test_scheduled_when_interval_elapsed(monkeypatch):
