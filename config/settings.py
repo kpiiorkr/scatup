@@ -14,6 +14,16 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
+def _env(name: str) -> str:
+    """환경변수 비밀값을 읽되 앞뒤 공백·개행을 제거한다.
+
+    GitHub Secrets/.env에 값을 붙여넣을 때 끝에 개행(\\n)이 딸려 들어가는 일이 흔한데,
+    그대로 두면 HTTP 헤더('Bearer 키\\n')나 URL 파라미터('key=키%0A')가 깨져 API 호출이
+    실패한다. 여기서 한 번 정리해 어떤 방식으로 등록해도 안전하게 만든다.
+    """
+    return os.getenv(name, "").strip()
+
+
 @dataclass(frozen=True)
 class Settings:
     # --- 실행 트리거 (rule §2) ---
@@ -70,13 +80,13 @@ class Settings:
     label_cleared: str = "승인 대기"
     label_attention: str = "🚨담당자 판단 필요"
 
-    # --- 비밀값 (.env 에서 로드) ---
-    naver_client_id: str = field(default_factory=lambda: os.getenv("NAVER_CLIENT_ID", ""))
-    naver_client_secret: str = field(default_factory=lambda: os.getenv("NAVER_CLIENT_SECRET", ""))
-    youtube_api_key: str = field(default_factory=lambda: os.getenv("YOUTUBE_API_KEY", ""))
-    law_api_key: str = field(default_factory=lambda: os.getenv("LAW_API_KEY", ""))
-    mistral_api_key: str = field(default_factory=lambda: os.getenv("MISTRAL_API_KEY", ""))
-    slack_webhook_url: str = field(default_factory=lambda: os.getenv("SLACK_WEBHOOK_URL", ""))
+    # --- 비밀값 (.env 에서 로드; 앞뒤 공백·개행 제거) ---
+    naver_client_id: str = field(default_factory=lambda: _env("NAVER_CLIENT_ID"))
+    naver_client_secret: str = field(default_factory=lambda: _env("NAVER_CLIENT_SECRET"))
+    youtube_api_key: str = field(default_factory=lambda: _env("YOUTUBE_API_KEY"))
+    law_api_key: str = field(default_factory=lambda: _env("LAW_API_KEY"))
+    mistral_api_key: str = field(default_factory=lambda: _env("MISTRAL_API_KEY"))
+    slack_webhook_url: str = field(default_factory=lambda: _env("SLACK_WEBHOOK_URL"))
 
 
 settings = Settings()
