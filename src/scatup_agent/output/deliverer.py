@@ -1,64 +1,64 @@
 """산출물 전달 (rule §9-2, §10).
 
-담당자 이메일/슬랙 알림 → 대시보드 '검수 대기' 반영 → CMS 초안함 저장.
-발행은 절대 자동으로 하지 않는다. 항상 사람이 직접 수행한다.
-현재 CMS 대신 data/outputs/ 에 초안·리포트 파일을 저장한다.
+블로그 초안을 GitHub Issue '검수 대기'로 등록한다. 발행은 절대 자동으로 하지 않으며,
+항상 사람이 직접 수행한다(§1-2). 토큰이 없는 로컬 실행에서는 콘솔로 폴백한다.
 """
 from __future__ import annotations
 
-import re
-from datetime import datetime
-from pathlib import Path
+from ..models.schemas import PipelineContext, TriggerType
+from . import github_issues
+from config.settings import settings
 
-from ..models.schemas import PipelineContext
-
-_OUTPUT_DIR = Path(__file__).resolve().parents[3] / "data" / "outputs"
+_CHECKLIST = (
+    "## 검수 체크리스트 (rule §10)\n"
+    "- [ ] 팩트체크\n"
+    "- [ ] 브랜드보이스 체크\n"
+    "- [ ] 발행 승인 (승인 후 사람이 직접 발행)\n"
+)
 
 
 def deliver(ctx: PipelineContext) -> None:
-    """산출물 저장 + 담당자 알림. '검수 대기' 등록까지만 수행한다."""
-    out_dir = None
-    if ctx.draft and (ctx.draft.title_options or ctx.draft.body):
-        if _is_duplicate(ctx.draft):
-            # 같은 제목 초안이 이미 있으면 저장하지 않는다 (중복 누적 방지)
-            print("[DEDUP] 동일 제목 초안이 이미 있어 저장을 생략합니다")
-        else:
-            out_dir = _save_outputs(ctx)
+    """초안을 검수 대기 Issue로 등록한다. 초안이 없으면 콘솔 알림만 수행한다."""
+    if not (ctx.draft and (ctx.draft.title_options or ctx.draft.body)):
+        # 초안 생성 전 게이트에 걸린 경우(데이터/근거 부족 등): 콘솔 알림만 (Actions 로그로 확인)
+        if ctx.halted:
+            _notify(f"[담당자 판단 필요] {ctx.halt_reason}")
+        return
 
-    if ctx.halted:
-        _notify(f"[담당자 판단 필요] {ctx.halt_reason}")
-    else:
-        _notify("[검수 대기] 신규 블로그 초안이 등록되었습니다.")
+    rep_title = ctx.draft.title_options[0] if ctx.draft.title_options else "(제목 없음)"
+    title = github_issues.draft_issue_title(rep_title)
+    body = _issue_body(ctx)
+    labels = _labels(ctx)
 
-    if out_dir:
-        print(f"[OUTPUT] 초안·리포트 저장 완료 → {out_dir}")
+    if not github_issues.enabled():
+        _notify("[검수 대기] 신규 블로그 초안 (로컬: GitHub 미연동 → 콘솔 출력)")
+        print(body)
+        return
 
+    if github_issues.is_duplicate(rep_title):
+        print("[DEDUP] 동일 제목 초안 Issue가 이미 열려 있어 생성을 생략합니다")
+        return
 
-def _is_duplicate(draft) -> bool:
-    """기존 저장 초안 중 동일한 대표 제목이 있으면 True (중복 방지)."""
-    if not draft.title_options:
-        return False
-    new_title = _norm(draft.title_options[0])
-    for draft_path in _OUTPUT_DIR.glob("run_*/draft.md"):
-        m = re.search(r"^1\.\s*(.+)$", draft_path.read_text(encoding="utf-8"), re.M)
-        if m and _norm(m.group(1)) == new_title:
-            return True
-    return False
+    url = github_issues.create_issue(title, body, labels)
+    if url is None:
+        print(body)  # 유실 방지: 실패 시 본문을 로그에 남긴다
+        raise RuntimeError("GitHub Issue 생성 실패 (토큰은 있으나 API 오류)")
+    print(f"[ISSUE] 검수 대기 Issue 생성 → {url}")
 
 
-def _norm(text: str) -> str:
-    return re.sub(r"\s+", "", text)
+def _labels(ctx: PipelineContext) -> list[str]:
+    labels = [settings.label_draft]
+    labels.append(
+        settings.label_trigger_scheduled
+        if ctx.trigger == TriggerType.SCHEDULED
+        else settings.label_trigger_rising
+    )
+    labels.append(settings.label_attention if ctx.halted else settings.label_cleared)
+    return labels
 
 
-def _save_outputs(ctx: PipelineContext) -> Path:
-    """블로그 초안 + 트렌드 리포트를 검수용 파일로 저장한다 (rule §9-1)."""
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_dir = _OUTPUT_DIR / f"run_{stamp}"
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    (out_dir / "draft.md").write_text(_render_draft(ctx), encoding="utf-8")
-    (out_dir / "report.md").write_text(_render_report(ctx), encoding="utf-8")
-    return out_dir
+def _issue_body(ctx: PipelineContext) -> str:
+    return "\n\n---\n\n".join([_render_draft(ctx), _render_report(ctx), _CHECKLIST])
 
 
 def _render_draft(ctx: PipelineContext) -> str:
@@ -114,10 +114,9 @@ def _render_report(ctx: PipelineContext) -> str:
             f"- [{it.channel.value}] {it.title} (관련성 {it.relevance_score:.2f}, 조회 {it.view_count:,}) — {it.url}"
         )
     if ctx.halted:
-        lines += ["", f"## ⚠️ 담당자 확인 필요", f"- 사유: {ctx.halt_reason}"]
+        lines += ["", "## ⚠️ 담당자 확인 필요", f"- 사유: {ctx.halt_reason}"]
     return "\n".join(lines)
 
 
 def _notify(message: str) -> None:
-    """TODO(담당): Slack webhook / 이메일 연동 (settings.slack_webhook_url)."""
     print(f"[NOTIFY] {message}")
