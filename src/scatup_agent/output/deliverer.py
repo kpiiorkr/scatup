@@ -16,6 +16,13 @@ _CHECKLIST = (
     "- [ ] 발행 승인 — 담당자가 확인한 뒤 직접 발행\n"
 )
 
+_REVIEW_HOWTO = (
+    "## 검수 방법\n"
+    "- **승인:** 오른쪽 `Labels`에 `승인` 추가 → `Close as completed` → 담당자가 직접 발행\n"
+    "- **반려:** 사유를 댓글로 남기고 `Labels`에 `반려` 추가 → `Close as not planned`\n"
+    "- 자세한 절차는 [검수 가이드]({guide})를 참고하세요.\n"
+)
+
 
 def deliver(ctx: PipelineContext) -> None:
     """초안을 검수 대기 Issue로 등록한다. 초안이 없으면 콘솔 알림만 수행한다."""
@@ -58,7 +65,8 @@ def _labels(ctx: PipelineContext) -> list[str]:
 
 
 def _issue_body(ctx: PipelineContext) -> str:
-    return "\n\n---\n\n".join([_render_draft(ctx), _render_report(ctx), _CHECKLIST])
+    howto = _REVIEW_HOWTO.format(guide=github_issues.repo_url("blob/main/docs/review-guide.md"))
+    return "\n\n---\n\n".join([_render_draft(ctx), _render_report(ctx), _CHECKLIST, howto])
 
 
 def _render_draft(ctx: PipelineContext) -> str:

@@ -46,6 +46,12 @@ def draft_issue_title(rep_title: str) -> str:
     return _TITLE_PREFIX + rep_title
 
 
+def repo_url(path: str = "") -> str:
+    """저장소 웹 URL. 로컬(레포 미설정)에서는 기본 레포로 폴백한다."""
+    repo = _repo() or "kpiiorkr/scatup"
+    return f"https://github.com/{repo}/{path}".rstrip("/")
+
+
 def _norm_title(title: str) -> str:
     """제목 접두사를 떼고 공백을 제거해 중복 비교용으로 정규화한다."""
     body = title[len(_TITLE_PREFIX):] if title.startswith(_TITLE_PREFIX) else title
