@@ -1,0 +1,55 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<title>기관 구독 신청</title>
+<style>
+:root{--bg:#F5F7FB;--surface:#fff;--ink:#16233D;--muted:#64728A;--primary:#2E6FE6;--primary-d:#1E55C0;
+--primary-soft:#EAF1FE;--line:#E4EAF3;--warn:#FFF8E6;--warn-line:#F3E6BE;--radius:14px;
+--shadow:0 2px 10px rgba(22,35,61,.05);--shadow-md:0 8px 28px rgba(22,35,61,.08);}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+font-family:"Pretendard","Pretendard Variable","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;}
+a{color:inherit;text-decoration:none} svg{display:block}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.ic{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;cursor:pointer;font-family:inherit;
+font-weight:700;border-radius:10px;padding:13px 22px;font-size:15px;transition:.15s;letter-spacing:-.02em}
+.btn.pri{background:var(--primary);color:#fff}.btn.pri:hover{background:var(--primary-d)}
+.btn.gho{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.gho:hover{border-color:#c9d6e8}
+/* nav */
+.nav{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:18px;height:64px}
+.logo{display:flex;align-items:center;gap:8px}.logo .nm{font-weight:900;font-size:19px;color:var(--primary);letter-spacing:-.04em}
+.logo .nm small{display:block;font-size:9px;font-weight:800;letter-spacing:.16em;color:#9aa7bd}
+.menu{display:flex;gap:26px;margin-left:12px;font-size:15px;font-weight:500;color:#45526b}
+.menu .on{color:var(--primary);font-weight:800}.sp{flex:1}
+.login{font-size:14px;color:var(--muted);font-weight:500}.cta{background:var(--primary);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;border-radius:9px}
+</style></head><body><style>
+.center{max-width:560px;margin:40px auto;padding:0 20px}
+.fc2{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:var(--shadow-md)}
+.fc2 h2{font-size:23px;margin:0 0 6px;letter-spacing:-.03em}.fc2 .s{font-size:14px;color:var(--muted);margin:0 0 22px}
+.fld{margin-bottom:14px}.fld label{display:block;font-size:13px;font-weight:700;color:#3b4a63;margin-bottom:6px}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:12px 13px;font-family:inherit;font-size:14.5px;color:var(--ink);background:#fff}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+.prog{display:flex;gap:8px;margin-bottom:22px}.prog .st{flex:1;text-align:center;font-size:12px;font-weight:700;color:#9aa7bd}
+.prog .st .d{height:4px;border-radius:3px;background:var(--line);margin-bottom:7px}.prog .st.on{color:var(--primary)}.prog .st.on .d{background:var(--primary)}
+.succ{background:#fff;border:1px solid var(--line);border-radius:16px;padding:44px 30px;box-shadow:var(--shadow-md);text-align:center}
+.succ .cic{width:66px;height:66px;border-radius:50%;background:#E8F6EE;display:grid;place-items:center;margin:0 auto 18px;color:#1E8E5A}
+.succ h2{font-size:24px;margin:0 0 10px;letter-spacing:-.03em}.succ p{font-size:15px;color:var(--muted);line-height:1.7;margin:0 0 8px}
+.rc{background:#F7F9FD;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:22px 0;text-align:left}
+.rc .r{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0}.rc .r .l{color:var(--muted)}.rc .r .v{font-weight:700}
+</style><div class="nav"><div class="wrap"><div class="logo"><svg width="30" height="30" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="8" fill="#EAF1FE"/><path d="M8 15h2.2l2-5 3.2 10 2.3-7 1.5 2h3" stroke="#2E6FE6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="nm">소리가치<small>SORIGACHI</small></div></div><nav class="menu"><span class="">가격별 비교</span><span class="">브랜드별 비교</span><span class="">상황별 비교</span><span class="on">기관 구독</span></nav><div class="sp"></div><span class="login">로그인</span><a class="cta">도입 문의</a></div></div><div class="center"><div class="fc2">
+<div class="prog"><div class="st on"><div class="d"></div>정보 입력</div><div class="st"><div class="d"></div>상담 접수</div><div class="st"><div class="d"></div>구독 개설</div></div>
+<h2>기관 구독 신청</h2><p class="s">기관 정보를 입력하시면 담당자가 1~2일 내 연락드립니다.</p>
+<form onsubmit="return false">
+<div class="fld"><label>기관명 *</label><input placeholder="예) ○○시청 / ○○복지관"></div>
+<div class="two"><div class="fld"><label>기관 유형 *</label><select><option>지자체</option><option>공공기관</option><option>복지기관</option></select></div>
+<div class="fld"><label>대상 인원 *</label><select><option>~50명</option><option>~200명</option><option>200명 이상</option></select></div></div>
+<div class="two"><div class="fld"><label>담당자명 *</label><input placeholder="성함"></div><div class="fld"><label>직위</label><input placeholder="예) 복지기획팀 주무관"></div></div>
+<div class="two"><div class="fld"><label>연락처 *</label><input placeholder="010-0000-0000"></div><div class="fld"><label>이메일 *</label><input placeholder="name@org.go.kr"></div></div>
+<div class="fld"><label>문의 내용</label><textarea rows="3" placeholder="도입 시기, 운영 방식 등 문의사항을 적어주세요."></textarea></div>
+<button class="sub">문의 접수하기</button></form></div></div></body></html>

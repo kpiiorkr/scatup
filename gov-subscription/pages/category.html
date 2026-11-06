@@ -1,0 +1,118 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<title>기관 구독 카테고리</title>
+<style>
+:root{--bg:#F5F7FB;--surface:#fff;--ink:#16233D;--muted:#64728A;--primary:#2E6FE6;--primary-d:#1E55C0;
+--primary-soft:#EAF1FE;--line:#E4EAF3;--warn:#FFF8E6;--warn-line:#F3E6BE;--radius:14px;
+--shadow:0 2px 10px rgba(22,35,61,.05);--shadow-md:0 8px 28px rgba(22,35,61,.08);}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+font-family:"Pretendard","Pretendard Variable","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;}
+a{color:inherit;text-decoration:none} svg{display:block}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.ic{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;cursor:pointer;font-family:inherit;
+font-weight:700;border-radius:10px;padding:13px 22px;font-size:15px;transition:.15s;letter-spacing:-.02em}
+.btn.pri{background:var(--primary);color:#fff}.btn.pri:hover{background:var(--primary-d)}
+.btn.gho{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.gho:hover{border-color:#c9d6e8}
+/* nav */
+.nav{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:18px;height:64px}
+.logo{display:flex;align-items:center;gap:8px}.logo .nm{font-weight:900;font-size:19px;color:var(--primary);letter-spacing:-.04em}
+.logo .nm small{display:block;font-size:9px;font-weight:800;letter-spacing:.16em;color:#9aa7bd}
+.menu{display:flex;gap:26px;margin-left:12px;font-size:15px;font-weight:500;color:#45526b}
+.menu .on{color:var(--primary);font-weight:800}.sp{flex:1}
+.login{font-size:14px;color:var(--muted);font-weight:500}.cta{background:var(--primary);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;border-radius:9px}
+</style></head><body><style>
+.hero{padding:58px 0 42px}.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+@media(max-width:840px){.hero .wrap{grid-template-columns:1fr;gap:26px}}
+.tag{display:inline-block;font-size:13px;font-weight:800;color:var(--primary-d);background:var(--primary-soft);border-radius:7px;padding:6px 12px;margin-bottom:18px}
+h1{font-size:38px;line-height:1.3;letter-spacing:-.04em;margin:0 0 16px;font-weight:900}h1 .b{color:var(--primary)}
+.lead{font-size:17px;line-height:1.7;color:#43526c;margin:0 0 26px;max-width:520px}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+.preview{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-md);overflow:hidden}
+.preview .bar{display:flex;align-items:center;gap:6px;padding:11px 14px;border-bottom:1px solid var(--line);background:#fbfcfe}
+.preview .bar i{width:9px;height:9px;border-radius:50%;background:#e2e8f2}.preview .bar span{margin-left:8px;font-size:12px;color:#9aa7bd;font-weight:700}
+.preview .body{padding:18px}.pvh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.pvh b{font-size:14px}.pvh span{font-size:12px;color:#9aa7bd}
+.bars{display:flex;align-items:flex-end;gap:9px;height:76px}.bars i{flex:1;background:var(--primary-soft);border-radius:5px 5px 0 0}.bars i.on{background:var(--primary)}
+.pvr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f4fa;font-size:13.5px}.pvr:last-child{border:none}
+.pvr .l{color:#45526b;font-weight:500}.pvr .v{font-weight:800}.chip{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px}.chip.g{background:#E8F6EE;color:#1E8E5A}.chip.b{background:var(--primary-soft);color:var(--primary-d)}
+section{padding:44px 0}.shead{margin:0 auto 26px;text-align:center;max-width:600px}.shead .k{font-size:14px;font-weight:800;color:var(--primary)}
+.shead h2{font-size:27px;letter-spacing:-.03em;margin:7px 0 9px;font-weight:900}.shead p{font-size:15px;color:var(--muted);line-height:1.6;margin:0}
+.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g3,.g4{grid-template-columns:1fr 1fr}}@media(max-width:540px){.g3,.g4{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:var(--shadow)}
+.feat .ib{width:44px;height:44px;border-radius:11px;background:var(--primary-soft);display:grid;place-items:center;margin-bottom:14px;color:var(--primary)}
+.feat h3{font-size:17px;margin:0 0 7px}.feat p{font-size:14px;color:var(--muted);line-height:1.65;margin:0}
+.step .n{display:inline-flex;width:28px;height:28px;border-radius:8px;background:var(--primary);color:#fff;font-weight:800;font-size:14px;align-items:center;justify-content:center;margin-bottom:12px}
+.step h3{font-size:16px;margin:0 0 6px}.step p{font-size:13.5px;color:var(--muted);line-height:1.6;margin:0}
+.plan{display:flex;flex-direction:column}.plan .tn{font-size:14px;font-weight:800;color:var(--primary-d)}.plan .px{font-size:28px;font-weight:900;margin:9px 0 2px}.plan .px small{font-size:13px;color:var(--muted);font-weight:600}
+.plan .sc{font-size:13px;color:var(--muted)}.plan ul{list-style:none;padding:0;margin:16px 0 20px;display:flex;flex-direction:column;gap:10px}
+.plan li{font-size:13.5px;color:#43526c;display:flex;gap:8px;line-height:1.45}.plan li svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--primary)}
+.plan.best{border:1.5px solid var(--primary);box-shadow:var(--shadow-md);position:relative}.plan.best .rb{position:absolute;top:-12px;left:24px;background:var(--primary);color:#fff;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:20px}
+.plan .btn{width:100%;padding:12px;font-size:14.5px}
+.apply .wrap{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center}@media(max-width:800px){.apply .wrap{grid-template-columns:1fr}}
+.apply h2{font-size:26px;letter-spacing:-.03em;margin:0 0 12px;line-height:1.34}.apply .d{font-size:15px;color:#43526c;line-height:1.7;margin:0 0 20px}
+.flow{display:flex;flex-direction:column;gap:12px}.flow .r{display:flex;gap:12px;align-items:center;font-size:14.5px;color:#43526c}
+.flow .r b{width:26px;height:26px;border-radius:50%;background:var(--primary-soft);color:var(--primary-d);font-size:13px;font-weight:800;display:grid;place-items:center;flex:none}
+.fc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:var(--shadow)}
+.fc h3{margin:0 0 3px;font-size:18px}.fc .s{font-size:13px;color:var(--muted);margin:0 0 17px}
+.fld{margin-bottom:13px}.fld label{display:block;font-size:13px;font-weight:700;color:#3b4a63;margin-bottom:6px}
+.fld input,.fld select{width:100%;border:1px solid var(--line);border-radius:9px;padding:12px 13px;font-family:inherit;font-size:14.5px;color:var(--ink);background:#fff}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.fn{font-size:11.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+footer{border-top:1px solid var(--line);background:#fff;margin-top:20px;padding:26px 0 40px;color:var(--muted);font-size:12.5px;line-height:1.7}
+.mock{display:inline-block;margin-top:10px;font-size:11.5px;color:var(--primary-d);font-weight:700;background:var(--primary-soft);border-radius:20px;padding:5px 13px}
+</style><div class="nav"><div class="wrap"><div class="logo"><svg width="30" height="30" viewBox="0 0 30 30" fill="none"><rect width="30" height="30" rx="8" fill="#EAF1FE"/><path d="M8 15h2.2l2-5 3.2 10 2.3-7 1.5 2h3" stroke="#2E6FE6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="nm">소리가치<small>SORIGACHI</small></div></div><nav class="menu"><span class="">가격별 비교</span><span class="">브랜드별 비교</span><span class="">상황별 비교</span><span class="on">기관 구독</span></nav><div class="sp"></div><span class="login">로그인</span><a class="cta">도입 문의</a></div></div>
+<header class="hero"><div class="wrap">
+<div><span class="tag">공공기관 전용 구독 서비스</span>
+<h1>소속 구성원의 청력 관리,<br><span class="b">기관이 함께 시작</span>하세요</h1>
+<p class="lead">지자체·공공기관·복지기관이 소속 대상자에게 청력 자가검사와 보청기 연계 서비스를 구독형으로 제공합니다. 도입 문의부터 대상 인원 관리까지 온라인으로 운영합니다.</p>
+<div class="acts"><button class="btn pri">기관 구독 문의하기</button><button class="btn gho">서비스 소개서 받기</button></div></div>
+<div class="preview"><div class="bar"><i></i><i></i><i></i><span>기관 관리자 · 대시보드</span></div>
+<div class="body"><div class="pvh"><b>이번 달 대상자 현황</b><span>2026.11</span></div>
+<div class="bars"><i style="height:38%"></i><i style="height:55%"></i><i style="height:48%"></i><i class="on" style="height:82%"></i><i style="height:64%"></i><i style="height:72%"></i></div>
+<div style="height:14px"></div>
+<div class="pvr"><span class="l">청력검사 완료</span><span class="v">142명</span></div>
+<div class="pvr"><span class="l">보청기 상담 연계</span><span class="chip b">진행 38건</span></div>
+<div class="pvr"><span class="l">구독 상태</span><span class="chip g">정상 운영</span></div></div></div>
+</div></header>
+
+<section><div class="wrap"><div class="shead"><div class="k">이용 방법</div><h2>기관 구독은 이렇게 이용해요</h2><p>문의 접수부터 운영까지, 전담 담당자가 전 과정을 함께합니다.</p></div>
+<div class="grid g4">
+<div class="card step"><span class="n">1</span><h3>도입 문의</h3><p>기관명·담당자·대상 인원을 입력해 온라인으로 문의를 접수합니다.</p></div>
+<div class="card step"><span class="n">2</span><h3>상담 · 견적</h3><p>담당자가 기관 규모에 맞는 구독 플랜과 운영 방식을 안내합니다.</p></div>
+<div class="card step"><span class="n">3</span><h3>구독 개설</h3><p>기관 전용 카테고리와 계정을 만들고 대상 인원을 등록합니다.</p></div>
+<div class="card step"><span class="n">4</span><h3>운영 · 관리</h3><p>대상자가 검사를 진행하고, 기관은 대시보드로 현황을 관리합니다.</p></div></div></div></section>
+
+<section><div class="wrap"><div class="shead"><div class="k">기관 구독의 가치</div><h2>왜 기관이 함께해야 할까요?</h2><p>대상자가 직접 찾아오지 않아도, 온라인으로 청력 상태를 확인하고 필요 시 보청기 상담까지 연결됩니다.</p></div>
+<div class="grid g3">
+<div class="card feat"><div class="ib"><svg class="" width="22" height="22" viewBox="0 0 24 24"><path class="ic" d="M4 13a8 8 0 0 1 16 0v4a3 3 0 0 1-3 3M4 13v4a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z"/></svg></div><h3>정밀 청력 자가검사</h3><p>주파수별·좌우 분리 순음청력 측정과 소음 속 숫자검사로 대상자의 청력 상태를 신뢰도 높게 확인합니다.</p></div>
+<div class="card feat"><div class="ib"><svg class="" width="22" height="22" viewBox="0 0 24 24"><path class="ic" d="M4 19V5m0 14h16M8 19v-6m4 6V9m4 10v-8"/></svg></div><h3>기관 전용 대시보드</h3><p>소속 대상자의 검사 현황·구독 상태·대상 인원을 한 화면에서 관리하고 기간별로 조회합니다.</p></div>
+<div class="card feat"><div class="ib"><svg class="" width="22" height="22" viewBox="0 0 24 24"><circle class="ic" cx="9" cy="8" r="3"/><path class="ic" d="M2 20a7 7 0 0 1 14 0M16 6a3 3 0 0 1 0 6m6 8a6 6 0 0 0-5-5"/></svg></div><h3>보청기 상담 연계</h3><p>검사 결과에 따라 파트너 보청기 전문점과 상담·구매를 연결해 사후관리까지 이어집니다.</p></div></div></div></section>
+
+<section><div class="wrap"><div class="shead"><div class="k">구독 플랜</div><h2>기관 규모별 구독 플랜</h2><p>대상 인원에 맞춰 선택하세요. 모든 플랜에 정밀 청력검사와 기관 대시보드가 포함됩니다.<br><span style="font-size:12.5px;color:var(--primary-d);font-weight:700">※ 금액은 예시이며 실제 요금은 상담 시 확정됩니다.</span></p></div>
+<div class="grid g3">
+<div class="card plan"><span class="tn">베이직</span><div class="px">월 29만원<small> ~</small></div><div class="sc">대상 ~50명 소규모 기관</div>
+<ul><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>정밀 청력 자가검사</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>기관 대시보드(기본)</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>검사 결과 리포트</li></ul><button class="btn gho">문의하기</button></div>
+<div class="card plan best"><span class="rb">가장 많이 선택</span><span class="tn">스탠다드</span><div class="px">월 59만원<small> ~</small></div><div class="sc">대상 ~200명 중규모 기관</div>
+<ul><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>베이직 전체 포함</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>대상 인원·구독 상태 관리</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>보청기 상담 연계</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>기간별 통계·내보내기</li></ul><button class="btn pri">문의하기</button></div>
+<div class="card plan"><span class="tn">엔터프라이즈</span><div class="px">별도 협의</div><div class="sc">대상 200명 이상·광역 단위</div>
+<ul><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>스탠다드 전체 포함</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>맞춤 연동·권한 관리</li><li><svg class="" width="16" height="16" viewBox="0 0 24 24"><path class="ic" d="M5 13l4 4L19 7"/></svg>전담 운영 지원</li></ul><button class="btn gho">문의하기</button></div></div></div></section>
+
+<section class="apply"><div class="wrap">
+<div><h2>기관 구독, 지금 문의하세요</h2><p class="d">담당자가 영업일 기준 1~2일 내 연락드려 도입 절차와 플랜을 안내합니다. 대상 인원과 운영 방식만 알려주시면 됩니다.</p>
+<div class="flow"><div class="r"><b>1</b> 아래 양식으로 문의 접수</div><div class="r"><b>2</b> 담당자 상담 · 견적 안내</div><div class="r"><b>3</b> 구독 개설 및 운영 시작</div></div></div>
+<form class="fc" onsubmit="return false"><h3>도입 문의 · 구독 신청</h3><p class="s">* 표시는 필수 입력 항목입니다.</p>
+<div class="fld"><label>기관명 *</label><input placeholder="예) ○○시청 / ○○복지관"></div>
+<div class="two"><div class="fld"><label>담당자명 *</label><input placeholder="성함"></div><div class="fld"><label>연락처 *</label><input placeholder="010-0000-0000"></div></div>
+<div class="two"><div class="fld"><label>기관 유형</label><select><option>지자체</option><option>공공기관</option><option>복지기관</option></select></div><div class="fld"><label>대상 인원</label><select><option>~50명</option><option>~200명</option><option>200명 이상</option></select></div></div>
+<div class="fld"><label>이메일</label><input placeholder="name@organization.go.kr"></div><button class="sub">문의 접수하기</button><p class="fn">접수 시 개인정보 수집·이용에 동의한 것으로 간주합니다. (디자인 예시)</p></form>
+</div></section>
+<footer><div class="wrap">소리가치 · 주식회사 스캣업 &nbsp;|&nbsp; 공공기관 전용 구독형 청력관리 서비스<br>소리가치는 온라인 판매 중개자로서 거래 당사자가 아니며, 파트너사의 견적·사후관리에 대한 책임을 지지 않습니다.<div><span class="mock">● 디자인 예시(목업)</span></div></div></footer>
+</body></html>
